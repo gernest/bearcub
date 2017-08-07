@@ -110,45 +110,6 @@ var reqReplaceVarsTests = []variableReplaceTest{
 			"Proxy-Connection: keep-alive\r\n\r\n",
 	},
 	{
-		Description: "Simple: Should replace any variables that exist, and for missing variables don't modify the reqeust.",
-		Req: &http.Request{
-			Method: "{method}",
-			URL: &url.URL{
-				Scheme: "http",
-				Host:   "{host}",
-				Path:   "/",
-			},
-			Proto:      "HTTP/1.1",
-			ProtoMajor: 1,
-			ProtoMinor: 1,
-			Header: http.Header{
-				"Accept":           {"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-				"Accept-Charset":   {"ISO-8859-1,utf-8;q=0.7,*;q=0.7"},
-				"Accept-Encoding":  {"gzip,deflate"},
-				"Accept-Language":  {"en-us,en;q=0.5"},
-				"Keep-Alive":       {"300"},
-				"Proxy-Connection": {"keep-alive"},
-				"User-Agent":       {"Fake"},
-			},
-			Body:  nil,
-			Close: false,
-			Host:  "www.techcrunch.com",
-			Form:  map[string][]string{},
-		},
-		Variables: `{
-      "host": "www.techcrunch.com"
-    }`,
-		Expected: "{method} / HTTP/1.1\r\n" +
-			"Host: www.techcrunch.com\r\n" +
-			"User-Agent: Fake\r\n" +
-			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n" +
-			"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n" +
-			"Accept-Encoding: gzip,deflate\r\n" +
-			"Accept-Language: en-us,en;q=0.5\r\n" +
-			"Keep-Alive: 300\r\n" +
-			"Proxy-Connection: keep-alive\r\n\r\n",
-	},
-	{
 		Description: "Simple: Replace request host with variable",
 		Req: &http.Request{
 			Method: "GET",
