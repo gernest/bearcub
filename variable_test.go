@@ -311,7 +311,7 @@ var reqReplaceVarsTests = []variableReplaceTest{
 		},
 		Body: []byte("{body}"),
 		Variables: `{
-      "body": "abcdef",
+      "body": "abcdef"
     }`,
 		Expected: "POST /search HTTP/1.1\r\n" +
 			"Host: www.google.com\r\n" +
