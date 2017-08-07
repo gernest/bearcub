@@ -1,4 +1,4 @@
-package variable_test
+package bearcub_test
 
 import (
 	"bytes"
@@ -9,6 +9,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"testing"
+
+	"github.com/gernest/bearcub"
 )
 
 /*
@@ -402,7 +404,7 @@ func TestRequestReplaceVariables(t *testing.T) {
 		}
 
 		// TODO: Call replace variable function here.
-
+		bearcub.Replace(tt.Req, tt.Variables)
 		dump, err := httputil.DumpRequestOut(tt.Req, true)
 		if err != nil {
 			t.Errorf("Test %s, error building reqeust %s.", tt.Description, err.Error())

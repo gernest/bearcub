@@ -1,4 +1,4 @@
-package variable_test
+package bearcub_test
 
 // TODO: Add benchmarks
 /*
