@@ -286,7 +286,7 @@ var reqReplaceVarsTests = []variableReplaceTest{
       "url": {
         "host": "google.com",
         "path": "/search"
-      },
+      }
     }`,
 		Expected: "GET /search HTTP/1.1\r\n" +
 			"Host: www.google.com\r\n" +
