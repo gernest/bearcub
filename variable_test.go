@@ -291,7 +291,8 @@ var reqReplaceVarsTests = []variableReplaceTest{
 		Expected: "GET /search HTTP/1.1\r\n" +
 			"Host: www.google.com\r\n" +
 			"User-Agent: Go-http-client/1.1\r\n" +
-			"Transfer-Encoding: chunked\r\n\r\n" +
+			"Transfer-Encoding: chunked\r\n" +
+			"Accept-Encoding: gzip\r\n\r\n" +
 			chunk("abcdef") + chunk(""),
 	},
 	{
@@ -317,7 +318,8 @@ var reqReplaceVarsTests = []variableReplaceTest{
 			"Host: www.google.com\r\n" +
 			"User-Agent: Go-http-client/1.1\r\n" +
 			"Connection: close\r\n" +
-			"Transfer-Encoding: chunked\r\n\r\n" +
+			"Transfer-Encoding: chunked\r\n" +
+			"Accept-Encoding: gzip\r\n\r\n" +
 			chunk("abcdef") + chunk(""),
 	},
 
