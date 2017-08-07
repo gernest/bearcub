@@ -15,9 +15,6 @@ import (
 
 // TODO: implement replace variables functions.
 // Variables are valid json, they can be either an array or object.
-type replacer interface {
-	replace(src string) string
-}
 
 const (
 	open    = '{'
