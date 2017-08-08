@@ -1,3 +1,5 @@
+// Package bearcub provides simple API for a simple mustache like string
+// templating
 package bearcub
 
 import (
@@ -12,9 +14,6 @@ import (
 	"github.com/pytlesk4/m"
 )
 
-// TODO: implement replace variables functions.
-// Variables are valid json, they can be either an array or object.
-
 const (
 	open    = '{'
 	closing = '}'
@@ -24,10 +23,14 @@ func dummy(a string) string {
 	return a
 }
 
+// JSONReplacer uses a map of json decoded values i.e map[string]interface{} to
+// offer retriving string representation of set values
 type JSONReplacer struct {
 	O map[string]interface{}
 }
 
+// NewJSONReplacer returns a new instance of JSONReplacer. src must be a vlid
+// json string object.
 func NewJSONReplacer(src []byte) (*JSONReplacer, error) {
 	j := &JSONReplacer{O: make(map[string]interface{})}
 	err := json.Unmarshal(src, &j.O)
@@ -37,6 +40,7 @@ func NewJSONReplacer(src []byte) (*JSONReplacer, error) {
 	return j, nil
 }
 
+// Replace returns a string representation of the value with key a.
 func (j *JSONReplacer) Replace(a string) string {
 	a = strings.TrimSpace(a)
 	if v, ok := m.GetOK(j.O, a); ok {
@@ -45,6 +49,8 @@ func (j *JSONReplacer) Replace(a string) string {
 	return a
 }
 
+// ReplaceString replaces any occupance of keys inside { } from the src with
+// values returned by the replacer function r
 func ReplaceString(out io.Writer, src []byte, r func(string) string) error {
 	rd := bytes.NewReader(src)
 	var isOpen bool
@@ -86,6 +92,7 @@ func ReplaceString(out io.Writer, src []byte, r func(string) string) error {
 	return nil
 }
 
+// Replace replace any string templates in the request objects with variables.
 func Replace(req *http.Request, variables string) error {
 	var r func(string) string
 	if variables == "" {
