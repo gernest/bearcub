@@ -24,28 +24,28 @@ func dummy(a string) string {
 	return a
 }
 
-type jsonReplacer struct {
-	o map[string]interface{}
+type JSONReplacer struct {
+	O map[string]interface{}
 }
 
-func newJSONReplacer(src []byte) (*jsonReplacer, error) {
-	j := &jsonReplacer{o: make(map[string]interface{})}
-	err := json.Unmarshal(src, &j.o)
+func NewJSONReplacer(src []byte) (*JSONReplacer, error) {
+	j := &JSONReplacer{O: make(map[string]interface{})}
+	err := json.Unmarshal(src, &j.O)
 	if err != nil {
 		return nil, err
 	}
 	return j, nil
 }
 
-func (j *jsonReplacer) replace(a string) string {
+func (j *JSONReplacer) Replace(a string) string {
 	a = strings.TrimSpace(a)
-	if v, ok := m.GetOK(j.o, a); ok {
+	if v, ok := m.GetOK(j.O, a); ok {
 		return fmt.Sprint(v)
 	}
 	return a
 }
 
-func replace(out io.Writer, src []byte, r func(string) string) error {
+func ReplaceString(out io.Writer, src []byte, r func(string) string) error {
 	rd := bytes.NewReader(src)
 	var isOpen bool
 	o := &bytes.Buffer{}
@@ -91,16 +91,16 @@ func Replace(req *http.Request, variables string) error {
 	if variables == "" {
 		r = dummy
 	} else {
-		jr, err := newJSONReplacer([]byte(variables))
+		jr, err := NewJSONReplacer([]byte(variables))
 		if err != nil {
 			return err
 		}
-		r = jr.replace
+		r = jr.Replace
 	}
 	var o bytes.Buffer
 	rep := func(a string) string {
 		if hasCurly(a) {
-			replace(&o, []byte(a), r)
+			ReplaceString(&o, []byte(a), r)
 			a = o.String()
 			o.Reset()
 		}
