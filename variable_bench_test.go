@@ -16,7 +16,7 @@ Instructions:
 
 */
 
-func BenchmarkReplace(b *testing.B) {
+func BenchmarkReplaceString(b *testing.B) {
 	jr, err := bearcub.NewJSONReplacer([]byte("{}"))
 	if err != nil {
 		b.Fatal(err)
