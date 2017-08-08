@@ -29,7 +29,7 @@ type JSONReplacer struct {
 	O map[string]interface{}
 }
 
-// NewJSONReplacer returns a new instance of JSONReplacer. src must be a vlid
+// NewJSONReplacer returns a new instance of JSONReplacer. src must be a valid
 // json string object.
 func NewJSONReplacer(src []byte) (*JSONReplacer, error) {
 	j := &JSONReplacer{O: make(map[string]interface{})}
