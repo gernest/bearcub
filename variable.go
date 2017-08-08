@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -25,19 +24,25 @@ func dummy(a string) string {
 	return a
 }
 
-func jsonReplacer(src []byte) func(string) string {
-	o := make(map[string]interface{})
-	err := json.Unmarshal(src, &o)
+type jsonReplacer struct {
+	o map[string]interface{}
+}
+
+func newJSONReplacer(src []byte) (*jsonReplacer, error) {
+	j := &jsonReplacer{o: make(map[string]interface{})}
+	err := json.Unmarshal(src, &j.o)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
-	return func(a string) string {
-		a = strings.TrimSpace(a)
-		if v, ok := m.GetOK(o, a); ok {
-			return fmt.Sprint(v)
-		}
-		return a
+	return j, nil
+}
+
+func (j *jsonReplacer) replace(a string) string {
+	a = strings.TrimSpace(a)
+	if v, ok := m.GetOK(j.o, a); ok {
+		return fmt.Sprint(v)
 	}
+	return a
 }
 
 func replace(out io.Writer, src []byte, r func(string) string) error {
@@ -86,7 +91,11 @@ func Replace(req *http.Request, variables string) error {
 	if variables == "" {
 		r = dummy
 	} else {
-		r = jsonReplacer([]byte(variables))
+		jr, err := newJSONReplacer([]byte(variables))
+		if err != nil {
+			return err
+		}
+		r = jr.replace
 	}
 	var o bytes.Buffer
 	rep := func(a string) string {
