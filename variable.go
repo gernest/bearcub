@@ -49,7 +49,7 @@ func (j *JSONReplacer) Replace(a string) string {
 	return a
 }
 
-// ReplaceString replaces any occupance of keys inside { } from the src with
+// ReplaceString replaces any occurrence of keys inside { } from the src with
 // values returned by the replacer function r
 func ReplaceString(out io.Writer, src []byte, r func(string) string) error {
 	rd := bytes.NewReader(src)
