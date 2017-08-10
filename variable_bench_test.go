@@ -36,7 +36,6 @@ func BenchmarkReplaceString(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		b.StopTimer()
 		if buf.String() != e {
 			b.Fatalf("expected %s got %s", e, buf.String())
 		}
