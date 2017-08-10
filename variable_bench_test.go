@@ -26,7 +26,7 @@ func BenchmarkReplaceString(b *testing.B) {
 	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
-		b.StartTimer()
+		b.StopTimer()
 		s := []byte("{number}")
 		e := fmt.Sprint(i)
 		jr.O["number"] = i
