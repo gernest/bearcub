@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"text/template"
+	"unicode"
 
 	"github.com/pytlesk4/m"
 )
@@ -20,7 +22,7 @@ const (
 )
 
 func dummy(a string) string {
-	return a
+	return "{" + a + "}"
 }
 
 // JSONReplacer uses a map of json decoded values i.e map[string]interface{} to
@@ -46,50 +48,26 @@ func (j *JSONReplacer) Replace(a string) string {
 	if v, ok := m.GetOK(j.O, a); ok {
 		return fmt.Sprint(v)
 	}
-	return a
+	return "{" + a + "}"
 }
 
 // ReplaceString replaces any occurrence of keys inside { } from the src with
 // values returned by the replacer function r
 func ReplaceString(out io.Writer, src []byte, r func(string) string) error {
-	rd := bytes.NewReader(src)
-	var isOpen bool
-	o := &bytes.Buffer{}
-	buf := &bytes.Buffer{}
-	for {
-		ch, _, err := rd.ReadRune()
-		if err != nil {
-			if err != io.EOF {
-				return err
-			}
-			break
-		}
-		switch ch {
-		case open:
-			isOpen = true
-		case closing:
-			isOpen = false
-			s := buf.String()
-			e := r(s)
-			if s == e {
-				o.WriteRune(open)
-				o.WriteString(s)
-				o.WriteRune(closing)
-			} else {
-				o.WriteString(e)
-			}
-			buf.Reset()
-			continue
-		default:
-			if isOpen {
-				buf.WriteRune(ch)
-			} else {
-				o.WriteRune(ch)
-			}
-		}
+	funcs := make(template.FuncMap)
+	funcs["replace"] = r
+	var o bytes.Buffer
+	err := Rewrite(&o, string(src))
+	if err != nil {
+		return err
 	}
-	out.Write(o.Bytes())
-	return nil
+	tpl, err := template.New("replacing").Funcs(funcs).Delims("<<", ">>").Parse(
+		o.String(),
+	)
+	if err != nil {
+		return err
+	}
+	return tpl.Execute(out, nil)
 }
 
 // Replace replace any string templates in the request objects with variables.
@@ -129,4 +107,73 @@ func Replace(req *http.Request, variables string) error {
 
 func hasCurly(src string) bool {
 	return strings.Contains(src, "{")
+}
+
+func Rewrite(out io.Writer, src string) error {
+	r := strings.NewReader(src)
+	o := &bytes.Buffer{}
+	for {
+		ch, _, err := r.ReadRune()
+		if err != nil {
+			if err == io.EOF {
+				out.Write(o.Bytes())
+				return nil
+			}
+			return err
+		}
+		switch ch {
+		case open:
+			if err = consumeSpace(r); err != nil {
+				return err
+			}
+			next, _, err := r.ReadRune()
+			if err != nil {
+				return err
+			}
+			if unicode.IsLetter(next) {
+				k, err := readUntil(r, closing)
+				if err != nil {
+					return err
+				}
+				k = string(next) + k
+				o.WriteString(attachReplaceFunc(k))
+			} else {
+				o.WriteRune(open)
+				o.WriteRune(next)
+			}
+		default:
+			o.WriteRune(ch)
+		}
+	}
+}
+
+func attachReplaceFunc(src string) string {
+	return fmt.Sprintf("<<replace \"%s\">>", src)
+}
+
+func consumeSpace(r *strings.Reader) error {
+	for {
+		ch, _, err := r.ReadRune()
+		if err != nil {
+			return err
+		}
+		if !unicode.IsSpace(ch) {
+			r.UnreadRune()
+			return err
+		}
+	}
+}
+
+func readUntil(r *strings.Reader, ch rune) (string, error) {
+	var o bytes.Buffer
+	for {
+		n, _, err := r.ReadRune()
+		if err != nil {
+			return "", err
+		}
+		if n == ch {
+			return o.String(), nil
+		}
+		o.WriteRune(n)
+	}
 }
