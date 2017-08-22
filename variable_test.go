@@ -386,3 +386,52 @@ func TestRequestReplaceVariables(t *testing.T) {
 func chunk(s string) string {
 	return fmt.Sprintf("%x\r\n%s\r\n", len(s), s)
 }
+
+func TestJSON(t *testing.T) {
+	sample := []struct {
+		src    string
+		expect string
+		vars   map[string]string
+	}{
+		{
+			`{ "key": {value}}`,
+			`{"key": some}`,
+			map[string]string{
+				"value": "some",
+			},
+		},
+		{
+			`{ "{key}": {value}}`,
+			`{"some_key": some}`,
+			map[string]string{
+				"value": "some",
+				"key":   "some_key",
+			},
+		},
+		{
+			`{host}`,
+			`{host}`,
+			map[string]string{
+				"value": "some",
+				"key":   "some_key",
+			},
+		},
+	}
+	var buf bytes.Buffer
+	for _, v := range sample {
+		buf.Reset()
+		err := bearcub.ReplaceString(&buf, []byte(v.src), func(k string) string {
+			if val, ok := v.vars[k]; ok {
+				return val
+			}
+			return "{" + k + "}"
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		g := buf.String()
+		if g != v.expect {
+			t.Errorf("expected %s got %s", v.expect, g)
+		}
+	}
+}
